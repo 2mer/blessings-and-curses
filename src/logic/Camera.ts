@@ -1,3 +1,5 @@
+import UnloadedBlock from "../blocks/UnloadedBlock";
+import Block from "./Block";
 import Entity from "./Entity";
 import Point from "./Point";
 import World from "./World";
@@ -20,23 +22,39 @@ export default class Camera {
 		return this._position;
 	}
 
-	project(options: { width: number, height: number }) {
-		const { width, height } = options;
+	project(options: { width: number, height: number, fallbackBlock?: Block }) {
+		const { width, height, fallbackBlock = undefined } = options;
 		const dimensions = new Point(width, height)
 
 		const cameraPos = this.position;
 
-		const blockProjection = Array.from({ length: height }).map(() => Array.from({ length: width }))
+		const blockProjection: (Block | undefined)[][] = Array.from({ length: height }).map(() => Array.from({ length: width }))
 
 		const halfDim = dimensions.clone().div(2).round()
 
 		for (let i = 0; i < height; i++) {
 			for (let j = 0; j < width; j++) {
-				blockProjection[i][j] = this.world.getBlock(cameraPos.clone().sub(halfDim).add(j, i))
+				blockProjection[i][j] = this.world.getBlock(cameraPos.clone().sub(halfDim).add(j, i)) ?? fallbackBlock
 			}
 		}
 
 		return blockProjection;
+	}
+
+	worldToCamera(point: Point, options: { width: number, height: number }) {
+		const { width, height } = options;
+
+		const halfDim = new Point(width, height).clone().div(2).round()
+
+		return point.clone().add(halfDim).sub(this.position);
+	}
+
+	cameraToWorld(point: Point, options: { width: number, height: number }) {
+		const { width, height } = options;
+
+		const halfDim = new Point(width, height).clone().div(2).round()
+
+		return point.clone().sub(halfDim).add(this.position);
 	}
 
 }

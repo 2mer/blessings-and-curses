@@ -1,10 +1,12 @@
 {
-	"name": "blessedtest",
+	"name": "blessings-and-curses",
 	"version": "1.0.0",
 	"description": "",
 	"main": "index.js",
+	"bin": "bin/src/index.js",
 	"scripts": {
-		"start": "ts-node src/index.tsx"
+		"start": "ts-node src/index.tsx",
+		"build": "rm -rf ./bin && tsc"
 	},
 	"keywords": [],
 	"author": "",
@@ -14,7 +16,9 @@
 		"blessed": "^0.1.81",
 		"react": "17",
 		"react-blessed": "^0.7.2",
-		"uuid": "^9.0.0"
+		"uuid": "^9.0.0",
+		"winston": "^3.8.2",
+		"zustand": "^4.1.5"
 	},
 	"devDependencies": {
 		"@types/blessed": "^0.1.19",

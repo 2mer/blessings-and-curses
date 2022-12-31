@@ -3,17 +3,21 @@ import { useEffect } from 'react';
 import useScreen from './useScreen';
 
 export default function useInput(
-	key: string,
+	keys: string[],
 	handler: (ch: any, key: Widgets.Events.IKeyEventArg) => void,
 	deps = []
 ) {
 	const screen = useScreen();
 
 	useEffect(() => {
-		screen.key(key, handler);
+		keys.forEach((key) => {
+			screen.key(key, handler);
+		});
 
 		return () => {
-			screen.unkey(key, handler);
+			keys.forEach((key) => {
+				screen.unkey(key, handler);
+			});
 		};
-	}, deps);
+	}, [...keys, deps]);
 }

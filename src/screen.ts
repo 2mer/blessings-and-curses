@@ -7,6 +7,7 @@ const screen = blessed.screen({
 	title: 'react-blessed hello world',
 	forceUnicode: true,
 	fullUnicode: true,
+	log: './logs/screen.log'
 });
 
 export default screen;

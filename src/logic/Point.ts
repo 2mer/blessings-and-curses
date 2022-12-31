@@ -45,7 +45,29 @@ export default class Point {
 		return this;
 	}
 
+	floor() {
+		this.x = Math.floor(this.x);
+		this.y = Math.floor(this.y);
+
+		return this;
+	}
+
+	ceil() {
+		this.x = Math.ceil(this.x);
+		this.y = Math.ceil(this.y);
+
+		return this;
+	}
+
 	clone() {
 		return new Point(this.x, this.y);
+	}
+
+	toString() {
+		return `Point(${this.x},${this.y})`;
+	}
+
+	toKey() {
+		return `${this.x}_${this.y}`;
 	}
 }

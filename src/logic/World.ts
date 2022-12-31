@@ -1,3 +1,4 @@
+import logger from "../logger";
 import settings from "../settings";
 import Chunk from "./Chunk";
 import Entity from "./Entity";
@@ -13,7 +14,7 @@ export default class World {
 	}
 
 	getChunk(chunkCoordinate: Point) {
-		const key = `${chunkCoordinate.x}-${chunkCoordinate.y}`;
+		const key = `${chunkCoordinate.x}_${chunkCoordinate.y}`;
 
 		return this.chunks.get(key);
 	}
@@ -21,8 +22,10 @@ export default class World {
 	getBlock(blockPosition: Point) {
 		const { chunkSize } = settings;
 
-		const chunkCoordinate = blockPosition.clone().div(chunkSize);
+		const chunkCoordinate = blockPosition.clone().div(chunkSize).floor();
 		const relativePosition = blockPosition.clone().mod(chunkSize);
+
+		logger.info(chunkSize + " " + blockPosition.clone() + " " + chunkCoordinate.toString() + " " + relativePosition.toString());
 
 		const chunk = this.getChunk(chunkCoordinate);
 
@@ -31,5 +34,25 @@ export default class World {
 		}
 
 		return chunk.getBlock(relativePosition);
+	}
+
+	loadChunk(chunk: Chunk) {
+		this.chunks.set(chunk.key, chunk);
+	}
+
+
+	unloadChunk(chunk: Chunk): void;
+	unloadChunk(chunk: string): void;
+	unloadChunk(chunk: Chunk | string) {
+		if (typeof chunk === 'string') {
+			this.chunks.delete(chunk);
+			return
+		}
+
+		this.chunks.delete(chunk.key);
+	}
+
+	getEntityLookup() {
+		return new Map<string, Entity>(this.entities.map(ent => [ent.position.toKey(), ent]))
 	}
 }

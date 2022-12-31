@@ -1,3 +1,4 @@
+import settings from "../settings";
 import Block from "./Block";
 import Point from "./Point";
 
@@ -13,6 +14,14 @@ export default class Chunk {
 
 	getBlock(relativePosition: Point) {
 		const { x, y } = relativePosition;
-		return this.blocks![y][x];
+
+		const wy = y < 0 ? settings.chunkSize + y : y;
+		const wx = x < 0 ? settings.chunkSize + x : x
+
+		return this.blocks![wy][wx];
+	}
+
+	get key() {
+		return `${this.position.x}_${this.position.y}`
 	}
 }

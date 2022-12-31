@@ -4,5 +4,5 @@ import { v4 } from "uuid";
 export default abstract class Entity {
 	id = v4();
 	position = new Point();
-	abstract render(): string;
+	abstract render(): [string, any];
 }

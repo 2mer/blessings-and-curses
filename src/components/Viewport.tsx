@@ -1,61 +1,95 @@
-import { useState } from 'react';
+import { Widgets } from 'blessed';
+import { useEffect, useRef, useState } from 'react';
+import AirBlock from '../blocks/AirBlock';
+import LadderBlock from '../blocks/LadderBlock';
+import StoneBlock from '../blocks/StoneBlock';
+import PlayerEntity from '../entities/PlayerEntity';
 import useInput from '../hooks/useInput';
-import Block from '../logic/Block';
+import logger from '../logger';
+import Camera from '../logic/Camera';
+import Chunk from '../logic/Chunk';
+import Point from '../logic/Point';
+import World from '../logic/World';
+import { useForceUpdate } from '@mantine/hooks';
+import ZombieEntity from '../entities/ZombieEntity';
+import useViewport from '../store/viewport';
+import MapRenderer from './MapRenderer';
+import settings from '../settings';
 
-const AirBlock: Block = {};
-const StoneBlock: Block = { style: { bg: 'gray' } };
-const LadderBlock: Block = { char: '#', style: { fg: '#a63800' } };
+const world = new World();
 
 const map = [
-	[AirBlock, AirBlock, AirBlock, AirBlock],
-	[StoneBlock, LadderBlock, AirBlock, StoneBlock],
-	[StoneBlock, LadderBlock, AirBlock, StoneBlock],
-	[StoneBlock, LadderBlock, AirBlock, StoneBlock],
-	[StoneBlock, StoneBlock, StoneBlock, StoneBlock],
-	[StoneBlock, StoneBlock, StoneBlock, StoneBlock],
-	[StoneBlock, StoneBlock, StoneBlock, StoneBlock],
+	[AirBlock, AirBlock, AirBlock, AirBlock, StoneBlock, StoneBlock],
+	[StoneBlock, LadderBlock, AirBlock, StoneBlock, StoneBlock, StoneBlock],
+	[StoneBlock, LadderBlock, AirBlock, StoneBlock, StoneBlock, StoneBlock],
+	[StoneBlock, LadderBlock, AirBlock, StoneBlock, StoneBlock, StoneBlock],
+	[StoneBlock, StoneBlock, StoneBlock, StoneBlock, StoneBlock, StoneBlock],
+	[StoneBlock, StoneBlock, StoneBlock, StoneBlock, StoneBlock, StoneBlock],
+	[StoneBlock, StoneBlock, StoneBlock, StoneBlock, StoneBlock, StoneBlock],
 ];
 
+const CHUNK_AMT = 4;
+
+for (let j = 0; j < CHUNK_AMT; j++) {
+	for (let i = 0; i < CHUNK_AMT; i++) {
+		const chunk = new Chunk({ position: new Point(i, j) });
+		chunk.blocks = map;
+
+		world.loadChunk(chunk);
+	}
+}
+
+const player = new PlayerEntity();
+
+const camera = new Camera({ world });
+camera.trackedEntity = player;
+
+const z1 = new ZombieEntity();
+z1.position.x = 0;
+z1.position.y = 0;
+const z2 = new ZombieEntity();
+z2.position.x = settings.chunkSize;
+z2.position.y = 0;
+const z3 = new ZombieEntity();
+z3.position.x = 0;
+z3.position.y = settings.chunkSize;
+const z4 = new ZombieEntity();
+z4.position.x = settings.chunkSize;
+z4.position.y = settings.chunkSize;
+
+world.entities.push(player, z1, z2, z3, z4);
+
 function Viewport() {
-	const [x, setX] = useState(0);
-	const [y, setY] = useState(0);
+	const forceUpdate = useForceUpdate();
+	const viewport = useViewport();
 
-	useInput('w', () => setY((prev) => prev - 1));
-	useInput('s', () => setY((prev) => prev + 1));
-	useInput('a', () => setX((prev) => prev - 1));
-	useInput('d', () => setX((prev) => prev + 1));
-
-	useInput('up', () => setY((prev) => prev - 1));
-	useInput('down', () => setY((prev) => prev + 1));
-	useInput('left', () => setX((prev) => prev - 1));
-	useInput('right', () => setX((prev) => prev + 1));
+	useInput(['w', 'up', 'k'], () => {
+		player.position.y -= 1;
+		forceUpdate();
+	});
+	useInput(['s', 'down', 'j'], () => {
+		player.position.y += 1;
+		forceUpdate();
+	});
+	useInput(['a', 'left', 'h'], () => {
+		player.position.x -= 1;
+		forceUpdate();
+	});
+	useInput(['d', 'right', 'l'], () => {
+		player.position.x += 1;
+		forceUpdate();
+	});
 
 	return (
-		<element>
-			{map.map((row, y) => {
-				return row.map((block, x) => {
-					const key = `${x}-${y}`;
-					return (
-						<box
-							key={key}
-							style={block.style}
-							top={y}
-							left={x}
-							width={1}
-							height={1}
-							content={block.char ?? ' '}
-						/>
-					);
-				});
-			})}
-			<text
-				top={y}
-				left={x}
-				width={1}
-				style={{ fg: 'yellow' }}
-				content='@'
-			/>
-		</element>
+		<box
+			width='100%'
+			height='100%-1'
+			ref={(b: any) => b && viewport.setSize(b.width, b.height)}
+			style={{ bg: 'gray' }}
+		>
+			{/* render the world */}
+			<MapRenderer world={world} camera={camera} />
+		</box>
 	);
 }
 
